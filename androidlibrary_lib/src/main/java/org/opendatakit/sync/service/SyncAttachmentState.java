@@ -19,7 +19,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 public enum SyncAttachmentState implements Parcelable {
-  SYNC, UPLOAD, DOWNLOAD, NONE, REDUCED_SYNC, RE_DOWNLOAD;
+  SYNC, UPLOAD, DOWNLOAD, NONE, REDUCED_DOWNLOAD, SYNC_WITH_REDUCED_DOWNLOAD;
 
   @Override
   public int describeContents() {
@@ -42,4 +42,14 @@ public enum SyncAttachmentState implements Parcelable {
     }
   };
 
+  public static boolean involvesDownload(SyncAttachmentState state) {
+    return state == SYNC || state == DOWNLOAD || state == REDUCED_DOWNLOAD || state == SYNC_WITH_REDUCED_DOWNLOAD;
+  }
+  public static boolean involvesReducedImgDownload(SyncAttachmentState state) {
+    return state == REDUCED_DOWNLOAD || state == SYNC_WITH_REDUCED_DOWNLOAD;
+  }
+
+  public static boolean involvesFullSizeImgDownload(SyncAttachmentState state) {
+    return state == SYNC || state == DOWNLOAD;
+  }
 }
