@@ -54,6 +54,7 @@ android {
         }
         debug {
             debuggable(true)
+            testCoverageEnabled(true)
             matchingFallbacks = ['release']
         }
     }
