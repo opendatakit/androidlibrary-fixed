@@ -96,6 +96,7 @@ public class ColorRuleTest {
 
       Assert.assertTrue(cr1.equalsWithoutId(cr2));
    }
+
    //Test to show if the returned Json representation for ColorRule is correct
    @Test
    public void testGetJsonRepresentation(){
@@ -111,4 +112,13 @@ public class ColorRuleTest {
 
       assertEquals(expected, cr.getJsonRepresentation());
    }
+
+   @Test
+   public void testToString() {
+      ColorRule cr = new ColorRule("uuid13", "myElement", ColorRule.RuleType.EQUAL, "1", Color.BLUE, Color.WHITE);
+      String expected = "[id=uuid13, elementKey=myElement, operator=EQUAL, value=1, background=-1, foreground=-16776961]";
+
+      assertEquals(expected, cr.toString());
+   }
+
 }
