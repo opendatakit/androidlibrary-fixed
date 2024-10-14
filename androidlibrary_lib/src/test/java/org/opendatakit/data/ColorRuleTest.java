@@ -14,6 +14,8 @@
 
 package org.opendatakit.data;
 
+import static org.junit.Assert.assertEquals;
+
 import android.graphics.Color;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -23,6 +25,9 @@ import org.junit.runners.JUnit4;
 import org.opendatakit.logging.WebLogger;
 import org.opendatakit.logging.desktop.WebLoggerDesktopFactoryImpl;
 import org.opendatakit.utilities.StaticStateManipulator;
+
+import java.util.TreeMap;
+import java.util.UUID;
 
 @RunWith(JUnit4.class)
 public class ColorRuleTest {
@@ -91,5 +96,19 @@ public class ColorRuleTest {
 
       Assert.assertTrue(cr1.equalsWithoutId(cr2));
    }
+   //Test to show if the returned Json representation for ColorRule is correct
+   @Test
+   public void testGetJsonRepresentation(){
+      String ruleId = UUID.randomUUID().toString();
+      ColorRule cr = new ColorRule(ruleId, "myElement1", ColorRule.RuleType.NO_OP, "-1", Color.YELLOW, Color.BLACK);
+      TreeMap<String,Object> expected = new TreeMap<>();
+      expected.put("mValue", "-1");
+      expected.put("mElementKey", "myElement1");
+      expected.put("mOperator", "NO_OP");
+      expected.put("mId", ruleId);
+      expected.put("mForeground", Color.YELLOW);
+      expected.put("mBackground", Color.BLACK);
 
+      assertEquals(expected, cr.getJsonRepresentation());
+   }
 }
