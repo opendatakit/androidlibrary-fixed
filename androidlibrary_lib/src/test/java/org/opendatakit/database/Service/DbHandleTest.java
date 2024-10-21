@@ -23,23 +23,21 @@ public class DbHandleTest {
     public void writeToParcel_CreatesParcel() {
         Parcel parcel = Parcel.obtain();
         dbHandle.writeToParcel(parcel, 0);
-        parcel.setDataPosition(0); // Reset the parcel for reading
+        parcel.setDataPosition(0); 
         DbHandle createdFromParcel = DbHandle.CREATOR.createFromParcel(parcel);
         assertEquals(TEST_DATABASE_HANDLE, createdFromParcel.getDatabaseHandle());
-        parcel.recycle(); // Clean up the parcel object
+        parcel.recycle(); 
     }
     @Test
     public void readFromParcel_NullDatabaseHandle_ThrowsException() {
         Parcel parcel = Parcel.obtain();
-        parcel.writeString(null); // Write null to the parcel
-        parcel.setDataPosition(0); // Reset the parcel for reading
-        try {
+        parcel.writeString(null); 
+        parcel.setDataPosition(0); 
             DbHandle createdFromParcel = DbHandle.CREATOR.createFromParcel(parcel);
             fail("Expected IllegalArgumentException to be thrown");
         } catch (IllegalArgumentException e) {
-            // Exception was thrown as expected
         } finally {
-            parcel.recycle(); // Clean up the parcel object
+            parcel.recycle(); 
         }
     }
     @Test
