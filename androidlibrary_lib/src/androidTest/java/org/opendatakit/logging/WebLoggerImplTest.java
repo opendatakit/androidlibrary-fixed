@@ -39,6 +39,13 @@ public class WebLoggerImplTest {
         logger.s(TEST_TAG, "Success log message");
         //TODO: Complete Test case and update function name
     }
+
+    @Test
+    public void Close_ShouldCloseLogFileWithoutException() {
+        logger.close();
+        //TODO: Complete Test case and update function name
+    }
+
     @Test
     public void StaleFileScan_ShouldNotThrowException() {
         long now = System.currentTimeMillis();
