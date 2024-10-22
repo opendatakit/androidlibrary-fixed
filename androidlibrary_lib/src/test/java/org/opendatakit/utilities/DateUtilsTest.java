@@ -15,6 +15,7 @@
 package org.opendatakit.utilities;
 
 import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +33,7 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class DateUtilsTest {
+  private DateUtils util;
 
   @BeforeClass
   public static void oneTimeSetUp() {
@@ -39,11 +41,14 @@ public class DateUtilsTest {
     WebLogger.setFactory(new WebLoggerDesktopFactoryImpl());
   }
 
+  @Before
+  public void setup() {
+    TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
+    util = new DateUtils(Locale.US, tz);
+  }
+
   @Test
   public void testDateInterpretation() {
-    TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
-    DateUtils util = new DateUtils(Locale.US, tz);
-    
     String value = util.validifyDateValue("3/4/2015");
     
     String expected = "2015-03-04T";
@@ -52,9 +57,6 @@ public class DateUtilsTest {
 
   @Test
   public void testNowInput() {
-    TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
-    DateUtils util = new DateUtils(Locale.US, tz);
-
     String value = util.validifyDateValue("now");
     assertNotNull(value);
 
@@ -68,9 +70,6 @@ public class DateUtilsTest {
 
   @Test
   public void testTimeAddition() {
-    TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
-    DateUtils util = new DateUtils(Locale.US, tz);
-
     String value = util.validifyDateValue("now + 10m");
     assertNotNull(value);
 
@@ -82,9 +81,6 @@ public class DateUtilsTest {
 
   @Test
   public void testTimeSubtraction() {
-    TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
-    DateUtils util = new DateUtils(Locale.US, tz);
-
     String value = util.validifyDateValue("now - 3h");
     assertNotNull(value);
 
@@ -96,18 +92,12 @@ public class DateUtilsTest {
 
   @Test
   public void testInvalidTime() {
-    TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
-    DateUtils util = new DateUtils(Locale.US, tz);
-
     String value = util.validifyDateValue("now - 3y");
     assertNull(value);
   }
 
   @Test
   public void testInvalidTimeFormat() {
-    TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
-    DateUtils util = new DateUtils(Locale.US, tz);
-
     String value = util.validifyDateValue("invalid-date");
     assertNull(value);
   }
