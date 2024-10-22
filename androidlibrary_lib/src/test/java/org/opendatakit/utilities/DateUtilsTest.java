@@ -46,7 +46,7 @@ public class DateUtilsTest {
   }
 
   @Test
-  public void testDateInterpretation() {
+  public void validifyDateValue_withDateInput_returnsFormattedDate() {
     String value = util.validifyDateValue("3/4/2015");
     
     String expected = "2015-03-04T";
