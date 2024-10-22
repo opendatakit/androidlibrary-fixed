@@ -14,6 +14,9 @@
 
 package org.opendatakit.utilities;
 
+import static org.junit.Assert.assertEquals;
+import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,18 +24,23 @@ import org.junit.runners.JUnit4;
 import org.opendatakit.logging.WebLogger;
 import org.opendatakit.logging.desktop.WebLoggerDesktopFactoryImpl;
 
+
 import java.util.Locale;
 import java.util.TimeZone;
-
-import static org.junit.Assert.assertEquals;
 
 @RunWith(JUnit4.class)
 public class DateUtilsTest {
 
+  private DateUtils dateUtils;
   @BeforeClass
   public static void oneTimeSetUp() {
     StaticStateManipulator.get().reset();
     WebLogger.setFactory(new WebLoggerDesktopFactoryImpl());
+  }
+  @Before
+  public void setUp() {
+    TimeZone timeZone = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
+    dateUtils = new DateUtils(Locale.US, timeZone);
   }
 
   @Test
@@ -45,5 +53,27 @@ public class DateUtilsTest {
     String expected = "2015-03-04T";
     assertEquals(expected, value.substring(0,expected.length()));
   }
+
+  @Test
+  public void testValidInstantInput(){
+    String input = "3/4/2015";
+    String expectedDateTime = "2015-03-04T00:00:00.000000000";
+    assertEquals(expectedDateTime, dateUtils.validifyDateValue(input));
+  }
+
+  @Test
+  public void testValidIntervalInput(){
+    String input = "today";  // Supported input format
+    DateTime expectedStart = new DateTime().withTimeAtStartOfDay();
+    String expectedOutput = dateUtils.formatDateTimeForDb(expectedStart);
+    assertEquals(expectedOutput, dateUtils.validifyDateValue(input));
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testNullInput() {
+    String input = null;
+    dateUtils.validifyDateValue(input);
+  }
+
 
 }

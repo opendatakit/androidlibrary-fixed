@@ -102,6 +102,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.2.1'
     implementation 'androidx.fragment:fragment:1.5.7'
 
+
     // Testing dependencies
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.annotation:annotation:1.7.1'
