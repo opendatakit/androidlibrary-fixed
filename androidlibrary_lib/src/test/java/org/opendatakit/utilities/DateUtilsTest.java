@@ -33,16 +33,14 @@ import static org.junit.Assert.assertTrue;
 
 @RunWith(JUnit4.class)
 public class DateUtilsTest {
-  private DateUtils util;
+  private static DateUtils util;
 
   @BeforeClass
   public static void oneTimeSetUp() {
     StaticStateManipulator.get().reset();
     WebLogger.setFactory(new WebLoggerDesktopFactoryImpl());
-  }
 
-  @Before
-  public void setup() {
+    // Set up TimeZone and DateUtils
     TimeZone tz = TimeZone.getTimeZone(TimeZone.getAvailableIDs()[0]);
     util = new DateUtils(Locale.US, tz);
   }
@@ -56,7 +54,7 @@ public class DateUtilsTest {
   }
 
   @Test
-  public void testNowInput() {
+  public void validifyDateValue_withNowInput_returnsFormattedCurrentDate() {
     String value = util.validifyDateValue("now");
     assertNotNull(value);
 
@@ -69,7 +67,7 @@ public class DateUtilsTest {
   }
 
   @Test
-  public void testTimeAddition() {
+  public void validifyDateValue_withfutureTimeInput_returnsTimeInTheFuture() {
     String value = util.validifyDateValue("now + 10m");
     assertNotNull(value);
 
@@ -80,7 +78,7 @@ public class DateUtilsTest {
   }
 
   @Test
-  public void testTimeSubtraction() {
+  public void validifyDateValue_withPastTimeInput_returnsTimeInThePast() {
     String value = util.validifyDateValue("now - 3h");
     assertNotNull(value);
 
@@ -91,13 +89,13 @@ public class DateUtilsTest {
   }
 
   @Test
-  public void testInvalidTime() {
+  public void validifyDateValue_withUnsupportedUnitInput_returnsNull() {
     String value = util.validifyDateValue("now - 3y");
     assertNull(value);
   }
 
   @Test
-  public void testInvalidTimeFormat() {
+  public void validifyDateValue_withInvalidTimeFormat_returnsNull() {
     String value = util.validifyDateValue("invalid-date");
     assertNull(value);
   }
