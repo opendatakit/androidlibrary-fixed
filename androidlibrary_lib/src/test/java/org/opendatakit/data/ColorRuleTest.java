@@ -97,6 +97,19 @@ public class ColorRuleTest {
    }
 
    @Test
+   public void testGetJsonRepresentation() {
+      ColorRule cr = new ColorRule("myElement", ColorRule.RuleType.EQUAL, "5", 0, 0);
+      TreeMap<String, Object> jsonMap = cr.getJsonRepresentation();
+
+      Assert.assertEquals("5", jsonMap.get("mValue"));
+      Assert.assertEquals("myElement", jsonMap.get("mElementKey"));
+      Assert.assertEquals(ColorRule.RuleType.EQUAL.name(), jsonMap.get("mOperator"));
+      Assert.assertNotNull(jsonMap.get("mId"));
+      Assert.assertEquals(0, jsonMap.get("mForeground"));
+      Assert.assertEquals(0, jsonMap.get("mBackground"));
+   }
+
+   @Test
    public void testCheckMatch() {
       // Create a mock TypedRow and ElementDataType
       TypedRow mockRow = mock(TypedRow.class);
@@ -124,19 +137,6 @@ public class ColorRuleTest {
       // Test for a case where the value is equal, but the rule is GREATER_THAN
       when(mockRow.getRawStringByKey("myElement")).thenReturn("15");
       Assert.assertFalse(cr1.checkMatch(mockType, mockRow));
-   }
-
-   @Test
-   public void testGetJsonRepresentation() {
-      ColorRule cr = new ColorRule("myElement", ColorRule.RuleType.EQUAL, "5", 0, 0);
-      TreeMap<String, Object> jsonMap = cr.getJsonRepresentation();
-
-      Assert.assertEquals("5", jsonMap.get("mValue"));
-      Assert.assertEquals("myElement", jsonMap.get("mElementKey"));
-      Assert.assertEquals(ColorRule.RuleType.EQUAL.name(), jsonMap.get("mOperator"));
-      Assert.assertNotNull(jsonMap.get("mId"));
-      Assert.assertEquals(0, jsonMap.get("mForeground"));
-      Assert.assertEquals(0, jsonMap.get("mBackground"));
    }
 
 }
