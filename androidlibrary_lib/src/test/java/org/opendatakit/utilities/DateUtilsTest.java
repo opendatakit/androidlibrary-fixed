@@ -128,4 +128,26 @@ public class DateUtilsTest {
     StaticStateManipulator.get().reset();
   }
 
+  @Test
+  public void testValidInstantInput(){
+    String input = "3/4/2015";
+    String expectedDateTime = "2015-03-04T00:00:00.000000000";
+    assertEquals(expectedDateTime, dateUtils.validifyDateValue(input));
+  }
+
+  @Test
+  public void testValidIntervalInput(){
+    String input = "today";  // Supported input format
+    DateTime expectedStart = new DateTime().withTimeAtStartOfDay();
+    String expectedOutput = dateUtils.formatDateTimeForDb(expectedStart);
+    assertEquals(expectedOutput, dateUtils.validifyDateValue(input));
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void testNullInput() {
+    String input = null;
+    dateUtils.validifyDateValue(input);
+  }
+
+
 }
