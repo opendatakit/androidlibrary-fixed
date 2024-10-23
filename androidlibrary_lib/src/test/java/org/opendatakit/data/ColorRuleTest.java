@@ -24,7 +24,7 @@ import java.util.TreeMap;
 import org.opendatakit.logging.WebLogger;
 import org.opendatakit.aggregate.odktables.rest.ElementDataType;
 import org.opendatakit.database.data.TypedRow;
-import static org.mockito.Mockito.*;
+import static org.powermock.api.mockito.PowerMockito.*;
 import org.opendatakit.logging.desktop.WebLoggerDesktopFactoryImpl;
 import org.opendatakit.utilities.StaticStateManipulator;
 

@@ -106,6 +106,8 @@ dependencies {
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'androidx.annotation:annotation:1.7.1'
     testImplementation 'org.mockito:mockito-core:4.0.0'
+    testImplementation 'org.powermock:powermock-module-junit4:2.0.9'
+testImplementation 'org.powermock:powermock-api-mockito2:2.0.9'
     androidTestImplementation 'androidx.test:rules:1.5.0'
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test:core:1.5.0'
