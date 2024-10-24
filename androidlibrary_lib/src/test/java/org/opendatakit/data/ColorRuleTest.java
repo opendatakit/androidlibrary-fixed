@@ -20,7 +20,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
+import java.util.TreeMap;
 import org.opendatakit.logging.WebLogger;
+import org.opendatakit.aggregate.odktables.rest.ElementDataType;
+import org.opendatakit.database.data.TypedRow;
+import static org.powermock.api.mockito.PowerMockito.*;
 import org.opendatakit.logging.desktop.WebLoggerDesktopFactoryImpl;
 import org.opendatakit.utilities.StaticStateManipulator;
 
@@ -90,6 +94,49 @@ public class ColorRuleTest {
       cr1.setColumnElementKey("fredColumn");
 
       Assert.assertTrue(cr1.equalsWithoutId(cr2));
+   }
+
+   @Test
+   public void testGetJsonRepresentation() {
+      ColorRule cr = new ColorRule("myElement", ColorRule.RuleType.EQUAL, "5", 0, 0);
+      TreeMap<String, Object> jsonMap = cr.getJsonRepresentation();
+
+      Assert.assertEquals("5", jsonMap.get("mValue"));
+      Assert.assertEquals("myElement", jsonMap.get("mElementKey"));
+      Assert.assertEquals(ColorRule.RuleType.EQUAL.name(), jsonMap.get("mOperator"));
+      Assert.assertNotNull(jsonMap.get("mId"));
+      Assert.assertEquals(0, jsonMap.get("mForeground"));
+      Assert.assertEquals(0, jsonMap.get("mBackground"));
+   }
+
+   @Test
+   public void testCheckMatch() {
+      // Create a mock TypedRow and ElementDataType
+      TypedRow mockRow = mock(TypedRow.class);
+      ElementDataType mockType = ElementDataType.number;
+
+      // Define behavior of the mock to return a specific value when getRawStringByKey is called
+      when(mockRow.getRawStringByKey("myElement")).thenReturn("10");
+
+      // Create a ColorRule for testing
+      ColorRule cr1 = new ColorRule("myElement", ColorRule.RuleType.LESS_THAN, "15", 0, 0);
+
+      // Verify that the match logic works as expected (10 is less than 15)
+      Assert.assertTrue(cr1.checkMatch(mockType, mockRow));
+
+      // Modify behavior to return a higher value that shouldn't match
+      when(mockRow.getRawStringByKey("myElement")).thenReturn("20");
+
+      // Verify the match fails since 20 is not less than 15
+      Assert.assertFalse(cr1.checkMatch(mockType, mockRow));
+
+      // Now change the rule to GREATER_THAN and test again
+      cr1.setOperator(ColorRule.RuleType.GREATER_THAN);
+      Assert.assertTrue(cr1.checkMatch(mockType, mockRow));
+
+      // Test for a case where the value is equal, but the rule is GREATER_THAN
+      when(mockRow.getRawStringByKey("myElement")).thenReturn("15");
+      Assert.assertFalse(cr1.checkMatch(mockType, mockRow));
    }
 
 }
