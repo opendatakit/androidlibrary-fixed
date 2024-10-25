@@ -16,11 +16,13 @@ package org.opendatakit.data;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.opendatakit.data.ColorRule.RuleType.getValues;
 
 import android.graphics.Color;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,6 +47,9 @@ import java.util.UUID;
 
 @RunWith(JUnit4.class)
 public class ColorRuleTest {
+
+   String ruleId = UUID.randomUUID().toString();
+   ColorRule cr = new ColorRule(ruleId, MY_ELEMENT,  ColorRule.RuleType.EQUAL, "1", Color.YELLOW, Color.BLACK);
 
    @BeforeClass
    public static void oneTimeSetUp() {
@@ -111,108 +116,182 @@ public class ColorRuleTest {
       Assert.assertTrue(cr1.equalsWithoutId(cr2));
    }
 
-   //Test to show if the returned Json representation for ColorRule is correct
+   /**getSymbol() test.
+    * Acceptance:
+    * Given: color rule with a valid rule type
+    * When: asked for the rule symbol
+    * Then: Return the correct string value
+    * [RULE_TYPE: EXPECTED_SYMBOL] = {EQUAL: =, LESS_THAN: <, LESS_THAN_OR_EQUAL: <=, GREATER_THAN_OR_EQUAL: >=, GREATER_THAN: >}
+   */
    @Test
-   public void testGetSymbol() {
-      assertEquals("=", ColorRule.RuleType.EQUAL.getSymbol());
-   }
-   @Test
-   public void testGetEnumFromString() {
-      CharSequence [] ruleTypeStrings = getValues();
-      ColorRule.RuleType expected = ColorRule.RuleType.LESS_THAN;
-      assertEquals(expected, ColorRule.RuleType.getEnumFromString(ruleTypeStrings[0].toString()));
-      expected = ColorRule.RuleType.LESS_THAN_OR_EQUAL;
-      assertEquals(expected, ColorRule.RuleType.getEnumFromString(ruleTypeStrings[1].toString()));
-      expected = ColorRule.RuleType.EQUAL;
-      assertEquals(expected, ColorRule.RuleType.getEnumFromString(ruleTypeStrings[2].toString()));
-      expected = ColorRule.RuleType.GREATER_THAN_OR_EQUAL;
-      assertEquals(expected, ColorRule.RuleType.getEnumFromString(ruleTypeStrings[3].toString()));
-      expected = ColorRule.RuleType.GREATER_THAN;
-      assertEquals(expected, ColorRule.RuleType.getEnumFromString(ruleTypeStrings[4].toString()));
-      expected = ColorRule.RuleType.NO_OP;
-      assertEquals(expected, ColorRule.RuleType.getEnumFromString(""));
-      try {
-         ColorRule.RuleType.getEnumFromString("odk");
-      }catch (IllegalArgumentException e) {
-         assertEquals("unrecognized rule operator: odk", e.getMessage());
-      }
+   public void givenColorRuleType_whenGetSymbolIsCalled_thenReturnCorrectSymbol() {
+      assertEquals(EQUAL_SYMBOL, cr.getOperator().getSymbol());
+
+      cr.setOperator(ColorRule.RuleType.LESS_THAN);
+      assertEquals(LESS_THAN_SYMBOL, cr.getOperator().getSymbol());
+
+      cr.setOperator(ColorRule.RuleType.LESS_THAN_OR_EQUAL);
+      assertEquals(LESS_THAN_OR_EQUAL_SYMBOL, cr.getOperator().getSymbol());
+
+      cr.setOperator(ColorRule.RuleType.GREATER_THAN);
+      assertEquals(GREATER_THAN_SYMBOL, cr.getOperator().getSymbol());
+
+      cr.setOperator(ColorRule.RuleType.GREATER_THAN_OR_EQUAL);
+      assertEquals(GREATER_THAN_OR_EQUAL_SYMBOL, cr.getOperator().getSymbol());
+
+      cr.setOperator(ColorRule.RuleType.EQUAL);
    }
 
+   /**getValues() test.
+    * Acceptance:
+    * Given: a list of strings
+    * When: the list is accessed
+    * Then: the list has the rule type symbols in the correct order
+    * [STRING_VALUE: EXPECTED_RULE_TYPE] = {=: EQUAL, <: LESS_THAN, <=: LESS_THAN_OR_EQUAL, >=: GREATER_THAN_OR_EQUAL,  >: GREATER_THAN}
+    */
    @Test
-   public void testGetJsonRepresentation(){
-      String ruleId = generateId();
-      ColorRule cr = new ColorRule(ruleId, MY_ELEMENT, ColorRule.RuleType.NO_OP, "-1", Color.YELLOW, Color.BLACK);
+   public void givenCharSequenceOfValues_whenSequenceIsAccessed_thenReturnRuleTypeSymbolInCorrectOrder() {
+      CharSequence[] ruleTypeStrings = getValues();
+      assertEquals(LESS_THAN_SYMBOL, ruleTypeStrings[0].toString());
+      assertEquals(LESS_THAN_OR_EQUAL_SYMBOL, ruleTypeStrings[1].toString());
+      assertEquals(EQUAL_SYMBOL, ruleTypeStrings[2].toString());
+      assertEquals(GREATER_THAN_OR_EQUAL_SYMBOL, ruleTypeStrings[3].toString());
+      assertEquals(GREATER_THAN_SYMBOL, ruleTypeStrings[4].toString());
+   }
+      /**getEnumFromString() test.
+       * Acceptance:
+       * Given: a string value AND string is a valid rule symbol
+       * When: corresponding rule type is fetched
+       * Then: return the correct rule type
+       * [STRING_VALUE: EXPECTED_RULE_TYPE] = {=: EQUAL, <: LESS_THAN, <=: LESS_THAN_OR_EQUAL, >=: GREATER_THAN_OR_EQUAL,  >: GREATER_THAN}
+       */
+   @Test
+   public void givenValidStringValue_whenGetEnumIsCalled_thenReturnCorrectRuleType() {
+      assertEquals(ColorRule.RuleType.LESS_THAN, ColorRule.RuleType.getEnumFromString(LESS_THAN_SYMBOL));
+      assertEquals(ColorRule.RuleType.LESS_THAN_OR_EQUAL, ColorRule.RuleType.getEnumFromString(LESS_THAN_OR_EQUAL_SYMBOL));
+      assertEquals(ColorRule.RuleType.EQUAL, ColorRule.RuleType.getEnumFromString(EQUAL_SYMBOL));
+      assertEquals(ColorRule.RuleType.GREATER_THAN_OR_EQUAL, ColorRule.RuleType.getEnumFromString(GREATER_THAN_OR_EQUAL_SYMBOL));
+      assertEquals(ColorRule.RuleType.GREATER_THAN, ColorRule.RuleType.getEnumFromString(GREATER_THAN_SYMBOL));
+      assertEquals(ColorRule.RuleType.NO_OP, ColorRule.RuleType.getEnumFromString(""));
+   }
+   /**getEnumFromString() test.
+       * Acceptance:
+       * Given: a string value AND string is not a valid rule symbol
+       * When: corresponding rule type is fetched
+       * Then: throw an IllegalArgumentException with the correct error message
+    **/
+   @Test
+   public void givenInvalidStringValue_whenGetEnumIsCalled_thenReturnCorrectRuleType() {
+      assertThrows(IllegalArgumentException.class, () -> ColorRule.RuleType.getEnumFromString("odk"));
+   }
+
+   //Test to show if the returned Json representation for ColorRule is correct
+   /**getJsonRepresentation() test.
+    * Acceptance:
+    * Given: a colorRule
+    * When: asked for the json representation
+    * Then: return a map of the color rule attributes to their corresponding value
+    **/
+   @Test
+   public void givenColorRule_whenJsonRepresentationRequested_thenReturnMapOfAttributesToValues(){
       TreeMap<String,Object> expected = new TreeMap<>();
-      expected.put("mValue", "-1");
+      expected.put("mValue", "1");
       expected.put("mElementKey", MY_ELEMENT);
-      expected.put("mOperator", "NO_OP");
+      expected.put("mOperator", "EQUAL");
       expected.put("mId", ruleId);
       expected.put("mForeground", Color.YELLOW);
       expected.put("mBackground", Color.BLACK);
-
       assertEquals(expected, cr.getJsonRepresentation());
    }
 
+   /**toString() test.
+    * Acceptance:
+    * Given: a colorRule
+    * When: asked for the string representation
+    * Then: return a string containing assignment of the color rule value to their corresponding
+    attributes, each separated by comma(,).
+    **/
    @Test
-   public void testToString() {
+   public void givenColorRule_whenStringRequested_thenReturnStringOfAttributesToValuesAssignmentSeparatedByComma() {
       ColorRule cr = new ColorRule("uuid13", MY_ELEMENT, ColorRule.RuleType.EQUAL, "1", Color.BLUE, Color.WHITE);
       String expected = "[id=uuid13, elementKey=myElement, operator=EQUAL, value=1, background=-1, foreground=-16776961]";
 
       assertEquals(expected, cr.toString());
    }
-   
-   @Test
-   public void testCheckMatch() {
-      //Create test values
-      ColorRule cr1 = new ColorRule(generateId(), MY_ELEMENT_1,  ColorRule.RuleType.EQUAL, "1", Color.BLUE, Color.WHITE);
-      ColorRule cr2 = new ColorRule(generateId(), MY_ELEMENT_2,  ColorRule.RuleType.LESS_THAN, "2", Color.BLUE, Color.WHITE);
-      ColorRule cr3 = new ColorRule(generateId(), MY_ELEMENT_3,  ColorRule.RuleType.LESS_THAN_OR_EQUAL, "3", Color.BLUE, Color.WHITE);
-      ColorRule cr4 = new ColorRule(generateId(), MY_ELEMENT_4,  ColorRule.RuleType.GREATER_THAN, "4", Color.BLUE, Color.WHITE);
-      ColorRule cr5 = new ColorRule(generateId(), MY_ELEMENT_5,  ColorRule.RuleType.GREATER_THAN_OR_EQUAL, "5", Color.BLUE, Color.WHITE);
-      ColorRule cr6 = new ColorRule(generateId(), MY_ELEMENT_6,  ColorRule.RuleType.GREATER_THAN_OR_EQUAL, "5", Color.BLUE, Color.WHITE);
-      ColorRule cr = new ColorRule(generateId(), MY_ELEMENT,  ColorRule.RuleType.NO_OP, "5", Color.BLUE, Color.WHITE);
 
+   /**checkMatch() test.
+    * Acceptance:
+    * Given: a colorRule that exists in a table row AND has a valid operator
+    * When: searched for with a specified element type in a table row of valid values
+    * Then: return true if match found with correct type.
+    **/
+   @Test
+   public void givenValidColorRuleInTableRow_whenRowSearched_thenReturnTrue() {
+      TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(new String[]{"1","1","3","5","5","false"});
+      //Check that all RuleTypes work with integer or number type
+      updateColorRule(MY_ELEMENT_1, "1", ColorRule.RuleType.EQUAL);
+      assertTrue(cr.checkMatch(ElementDataType.integer, rowToMatch));
+      updateColorRule(MY_ELEMENT_2, "2", ColorRule.RuleType.LESS_THAN);
+      assertTrue(cr.checkMatch(ElementDataType.integer, rowToMatch));
+      updateColorRule(MY_ELEMENT_3, "3", ColorRule.RuleType.LESS_THAN_OR_EQUAL);
+      assertTrue(cr.checkMatch(ElementDataType.integer, rowToMatch));
+      updateColorRule(MY_ELEMENT_4, "4", ColorRule.RuleType.GREATER_THAN);
+      assertTrue(cr.checkMatch(ElementDataType.integer, rowToMatch));
+      updateColorRule(MY_ELEMENT_5, "5", ColorRule.RuleType.GREATER_THAN_OR_EQUAL);
+      assertTrue(cr.checkMatch(ElementDataType.number, rowToMatch));
+      updateColorRule(MY_ELEMENT_6, "true", ColorRule.RuleType.LESS_THAN);
+      assertTrue(cr.checkMatch(ElementDataType.bool, rowToMatch));
+      updateColorRule(MY_ELEMENT, "1", ColorRule.RuleType.EQUAL);
+   }
+
+   /**checkMatch() test.
+    * Acceptance:
+    * Given: a colorRule that doesn't exist in a table row OR has an invalid operator OR has a value with unexpected type
+    * When: searched for with the expected element type in the table row
+    * Then: return false.
+    **/
+   @Test
+   public void givenValidColorRuleInTableRow_whenRowSearched_andOperatorIsNoOp_orDiffElementTypeSpec_thenReturnFalse() {
+      TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(new String[]{"","[44,67]","4","3",null,"odk"});
+      //Check that RuleTypes work with non-numeric types
+      updateColorRule(MY_ELEMENT_1, "1", ColorRule.RuleType.EQUAL);
+      assertFalse(cr.checkMatch(ElementDataType.string, rowToMatch));
+      updateColorRule(MY_ELEMENT_2, "[2,3,4]", ColorRule.RuleType.LESS_THAN_OR_EQUAL);
+      assertFalse(cr.checkMatch(ElementDataType.array, rowToMatch));
+      updateColorRule(MY_ELEMENT_3, "4", ColorRule.RuleType.GREATER_THAN);
+      assertFalse(cr.checkMatch(ElementDataType.string, rowToMatch));
+      updateColorRule(MY_ELEMENT_4, "5", ColorRule.RuleType.GREATER_THAN_OR_EQUAL);
+      assertFalse(cr.checkMatch(ElementDataType.string, rowToMatch));
+      updateColorRule(MY_ELEMENT_5, "5", ColorRule.RuleType.NO_OP);
+      assertFalse(cr.checkMatch(ElementDataType.string, rowToMatch));
+   }
+   @Test
+   public void givenInValidColorRuleInTableRow_whenRowSearched_thenThrowException() {
+      TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(new String[]{"odk"});
+      updateColorRule(MY_ELEMENT_1, "1", ColorRule.RuleType.NO_OP);
+      assertThrows(IllegalArgumentException.class, () -> cr.checkMatch(ElementDataType.string, rowToMatch));
+   }
+
+   private TypedRow setupTableWithRowEntriesAndReturnTypedRow(String[] rowEntries){
       //Setup Color table
-      String[] primaryKeys = {cr1.getRuleId(), cr2.getRuleId(), cr3.getRuleId(), cr4.getRuleId(), cr5.getRuleId()};
-      String[] elementKeys = {MY_ELEMENT_1, MY_ELEMENT_2, MY_ELEMENT_3, MY_ELEMENT_4, MY_ELEMENT_5, MY_ELEMENT, MY_ELEMENT_6};
-      BaseTable table = new BaseTable(primaryKeys, elementKeys, generateElementKeyToIndex(elementKeys), 5);
+      String[] primaryKey = {"id"};
+      String[] elementKeys = {MY_ELEMENT_1, MY_ELEMENT_2, MY_ELEMENT_3, MY_ELEMENT_4, MY_ELEMENT_5, MY_ELEMENT_6};
+      BaseTable table = new BaseTable(primaryKey, elementKeys, generateElementKeyToIndex(elementKeys), 1);
       //Define the table's column
       List<Column> columns = new ArrayList<>();
       columns.add(new Column(COLOR_COL, COLOR_COL, ElementDataType.integer.name(), null));
       OrderedColumns orderedColumns = new OrderedColumns(APP_NAME, TABLE_ID_1, columns);
       //Define the table's rows
       Row row;
-      TypedRow rowToMatch;
-      row= new Row(new String[]{"1","1","3","5","5",null}, table);
+      row= new Row(rowEntries, table);
       table.addRow(row);
-      rowToMatch = new TypedRow(table.getRowAtIndex(0),orderedColumns);
-      //Check that all RuleTypes work with integer or number type
-      assertTrue(cr1.checkMatch(ElementDataType.integer, rowToMatch));
-      assertTrue(cr2.checkMatch(ElementDataType.integer, rowToMatch));
-      assertTrue(cr3.checkMatch(ElementDataType.integer, rowToMatch));
-      assertTrue(cr4.checkMatch(ElementDataType.integer, rowToMatch));
-      assertTrue(cr5.checkMatch(ElementDataType.number, rowToMatch));
-      assertFalse(cr.checkMatch(ElementDataType.integer, rowToMatch));
-
-      row= new Row(new String[]{"","false","[44,67]","4","3","5","odk"}, table);
-      table.addRow(row);
-      rowToMatch = new TypedRow(table.getRowAtIndex(1),orderedColumns);
-      //Check that RuleTypes work with non-numeric types
-      assertFalse(cr1.checkMatch(ElementDataType.string, rowToMatch));
-      cr2.setVal("true");
-      assertTrue(cr2.checkMatch(ElementDataType.bool, rowToMatch));
-      cr3.setVal("[2,3,4]");
-      assertFalse(cr3.checkMatch(ElementDataType.array, rowToMatch));
-      assertFalse(cr4.checkMatch(ElementDataType.string, rowToMatch));
-      assertFalse(cr5.checkMatch(ElementDataType.string, rowToMatch));
-     try {
-        cr.checkMatch(ElementDataType.integer, rowToMatch);
-     }catch (IllegalArgumentException e) {
-        assertEquals("unrecognized op passed to checkMatch: NO_OP", e.getMessage());
-     }
-      cr6.checkMatch(ElementDataType.integer, rowToMatch);
+      return new TypedRow(table.getRowAtIndex(0),orderedColumns);
    }
-
+   private void updateColorRule(String colName, String value, ColorRule.RuleType operator){
+      cr.setColumnElementKey(colName);
+      cr.setVal(value);
+      cr.setOperator(operator);
+   }
    private String generateId(){
       return UUID.randomUUID().toString();
    }
@@ -234,4 +313,13 @@ public class ColorRuleTest {
    private static final String MY_ELEMENT_4 = "myElement4";
    private static final String MY_ELEMENT_5 = "myElement5";
    private static final String MY_ELEMENT_6 = "myElement6";
+   private static final String EQUAL_SYMBOL = "=";
+   private static final String LESS_THAN_SYMBOL = "<";
+   private static final String LESS_THAN_OR_EQUAL_SYMBOL = "<=";
+   private static final String GREATER_THAN_OR_EQUAL_SYMBOL = ">=";
+   private static final String GREATER_THAN_SYMBOL = ">";
+   @After
+   public void clearProperties() {
+      StaticStateManipulator.get().reset();
+   }
 }
