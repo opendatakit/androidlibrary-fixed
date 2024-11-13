@@ -23,7 +23,9 @@ import static org.opendatakit.data.ColorRule.RuleType.getValues;
 import android.graphics.Color;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,15 +43,13 @@ import org.opendatakit.utilities.StaticStateManipulator;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.TreeMap;
 import java.util.UUID;
 
 @RunWith(JUnit4.class)
 public class ColorRuleTest {
-
    String ruleId = UUID.randomUUID().toString();
-   ColorRule cr = new ColorRule(ruleId, MY_ELEMENT,  ColorRule.RuleType.EQUAL, "1", Color.YELLOW, Color.BLACK);
+   ColorRule cr;
 
    @BeforeClass
    public static void oneTimeSetUp() {
@@ -57,6 +57,14 @@ public class ColorRuleTest {
       WebLogger.setFactory(new WebLoggerDesktopFactoryImpl());
    }
 
+   @Before
+   public void setupColorRule(){
+      cr = new ColorRule(ruleId, MY_ELEMENT,  ColorRule.RuleType.EQUAL, "1", Color.YELLOW, Color.BLACK);
+   }
+   @After
+   public void tearDownColorRule(){
+      cr = null;
+   }
    @Test
    public void testColorRule() {
       ColorRule cr1 = new ColorRule("myElement", ColorRule.RuleType.EQUAL, "5", Color.BLUE, Color
@@ -138,8 +146,6 @@ public class ColorRuleTest {
 
       cr.setOperator(ColorRule.RuleType.GREATER_THAN_OR_EQUAL);
       assertEquals(GREATER_THAN_OR_EQUAL_SYMBOL, cr.getOperator().getSymbol());
-
-      cr.setOperator(ColorRule.RuleType.EQUAL);
    }
 
    /**getValues() test.
@@ -213,9 +219,7 @@ public class ColorRuleTest {
     **/
    @Test
    public void givenColorRule_whenStringRequested_thenReturnStringOfAttributesToValuesAssignmentSeparatedByComma() {
-      ColorRule cr = new ColorRule("uuid13", MY_ELEMENT, ColorRule.RuleType.EQUAL, "1", Color.BLUE, Color.WHITE);
-      String expected = "[id=uuid13, elementKey=myElement, operator=EQUAL, value=1, background=-1, foreground=-16776961]";
-
+      String expected = "[id="+ruleId+", elementKey=myElement, operator=EQUAL, value=1, background=-16777216, foreground=-256]";
       assertEquals(expected, cr.toString());
    }
 
@@ -241,7 +245,6 @@ public class ColorRuleTest {
       assertTrue(cr.checkMatch(ElementDataType.number, rowToMatch));
       updateColorRule(MY_ELEMENT_6, "true", ColorRule.RuleType.LESS_THAN);
       assertTrue(cr.checkMatch(ElementDataType.bool, rowToMatch));
-      updateColorRule(MY_ELEMENT, "1", ColorRule.RuleType.EQUAL);
    }
 
    /**checkMatch() test.
@@ -276,7 +279,14 @@ public class ColorRuleTest {
       //Setup Color table
       String[] primaryKey = {"id"};
       String[] elementKeys = {MY_ELEMENT_1, MY_ELEMENT_2, MY_ELEMENT_3, MY_ELEMENT_4, MY_ELEMENT_5, MY_ELEMENT_6};
-      BaseTable table = new BaseTable(primaryKey, elementKeys, generateElementKeyToIndex(elementKeys), 1);
+      HashMap<String, Integer> elementKeyToIndex = new HashMap<>();
+      elementKeyToIndex.put(MY_ELEMENT_1,0);
+      elementKeyToIndex.put(MY_ELEMENT_2,1);
+      elementKeyToIndex.put(MY_ELEMENT_3,2);
+      elementKeyToIndex.put(MY_ELEMENT_4,3);
+      elementKeyToIndex.put(MY_ELEMENT_5,4);
+      elementKeyToIndex.put(MY_ELEMENT_6,5);
+      BaseTable table = new BaseTable(primaryKey, elementKeys, elementKeyToIndex, 1);
       //Define the table's column
       List<Column> columns = new ArrayList<>();
       columns.add(new Column(COLOR_COL, COLOR_COL, ElementDataType.integer.name(), null));
@@ -292,17 +302,7 @@ public class ColorRuleTest {
       cr.setVal(value);
       cr.setOperator(operator);
    }
-   private String generateId(){
-      return UUID.randomUUID().toString();
-   }
 
-   private Map<String, Integer> generateElementKeyToIndex(String[] elementKeys) {
-      Map<String, Integer> elementKeyToIndex = new HashMap<>();
-      for (int i = 0; i < elementKeys.length; i++) {
-         elementKeyToIndex.put(elementKeys[i], i);
-      }
-      return elementKeyToIndex;
-   }
    private static final String APP_NAME = "colorRuleTest";
    private static final String TABLE_ID_1 = "myTableId_1";
    private static final String COLOR_COL = "Color_Col";
@@ -318,8 +318,9 @@ public class ColorRuleTest {
    private static final String LESS_THAN_OR_EQUAL_SYMBOL = "<=";
    private static final String GREATER_THAN_OR_EQUAL_SYMBOL = ">=";
    private static final String GREATER_THAN_SYMBOL = ">";
-   @After
-   public void clearProperties() {
+   @AfterClass
+   public static void clearProperties() {
       StaticStateManipulator.get().reset();
+      WebLogger.closeAll();
    }
 }
