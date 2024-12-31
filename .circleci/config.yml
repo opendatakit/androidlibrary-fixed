@@ -88,18 +88,18 @@ workflows:
       - build
       - test:
           requires:
-          - build
+            - build
       - deploy:
           requires:
             - test
           filters:
-             branches:
-              only:
-                - update-jdk11
+            branches:
+                only:
+                    - upgrade-jdk11
       - trigger-children:
           requires:
             - deploy
           filters:
              branches:
-              only:
-                - update-jdk11
+                only:
+                    - upgrade-jdk11
