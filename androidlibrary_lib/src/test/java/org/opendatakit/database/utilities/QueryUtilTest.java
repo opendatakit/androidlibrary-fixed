@@ -29,48 +29,57 @@ public class QueryUtilTest {
         tableId = TEST_TABLE;
     }
 
-    @Test
-    public void buildSqlStatement_withBasicInput_returnBasicOutput() {
-        assertEquals(SELECT_ALL, getBuiltSqlStatement());
-    }
     private String getBuiltSqlStatement(){
-        return QueryUtil.buildSqlStatement(tableId, whereClause, groupBy, havingClause, orderBy, direction);
+        return QueryUtil.
+                buildSqlStatement(tableId, whereClause, groupBy, havingClause, orderBy, direction);
     }
 
     @Test
+    public void buildSqlStatement_withBasicInput_returnBasicOutput() {
+        assertEquals(SELECT+"\""+TEST_TABLE+"\" ", getBuiltSqlStatement());
+    }
+    @Test
     public void buildSqlStatement_withWhereClause_returnWhereStatement() {
-        whereClause = SORT_FIELD_1 + "=" + SORT_PARAM;
-        assertEquals(SELECT_WHERE, getBuiltSqlStatement());
+        whereClause = SORT_FIELD_1 + EQUALS + SORT_PARAM;
+        String expected = SELECT + "\""+TEST_TABLE+"\" " + WHERE + SORT_FIELD_1 + EQUALS + SORT_PARAM;
+        assertEquals(expected, getBuiltSqlStatement());
     }
 
     @Test
     public void buildSqlStatement_withHavingClause_returnHavingStatement() {
         groupBy = new String[]{GROUP_1};
         havingClause = HAVING_CLAUSE;
-        assertEquals(SELECT_HAVING, getBuiltSqlStatement());
+        String expected = SELECT + "\""+TEST_TABLE+"\" "+ GROUP_BY + GROUP_1+HAVING+HAVING_CLAUSE;
+        assertEquals(expected, getBuiltSqlStatement());
     }
 
     @Test
     public void buildSqlStatement_withOrderBy_returnOrderByStatement() {
         orderBy = new String[]{SORT_FIELD_3};
-        assertEquals(SELECT_ORDER_BY, getBuiltSqlStatement());
+        String expected = SELECT+"\""+TEST_TABLE+"\" "+ SORT_FIELD_3 +" ASC";
+        assertEquals(expected, getBuiltSqlStatement());
     }
 
     @Test
     public void buildSqlStatement_withOrderByDirection_returnOrderByDirectionStatement() {
         orderBy = new String[]{SORT_FIELD_2};
         direction = new String[]{DESC};
-        assertEquals(SELECT_ORDER_BY_ORDER_DESC, getBuiltSqlStatement());
+        String expected = SELECT+"\""+TEST_TABLE+"\" "+ORDER_BY+ SORT_FIELD_2 +" "+DESC;
+        assertEquals(expected, getBuiltSqlStatement());
     }
 
     @Test
     public void buildSqlStatement_withAllClauses_returnComplexStatement() {
-        whereClause = SORT_FIELD_1 + "=" + SORT_PARAM;
+        whereClause = SORT_FIELD_1 + EQUALS + SORT_PARAM;
         groupBy = new String[]{GROUP_1, GROUP_2};
         havingClause = HAVING_CLAUSE;
         orderBy = new String[]{SORT_FIELD_2, SORT_FIELD_1, ""};
         direction = new String[]{DESC, ASC, null};
-        assertEquals(SELECT_ALL_WHERE_HAVING_ORDER_BY_ORDER_DIRECTION, getBuiltSqlStatement());
+
+        String expected = SELECT+"\""+TEST_TABLE+"\""+WHERE+SORT_FIELD_1+EQUALS+SORT_PARAM
+                +GROUP_BY+GROUP_1+", "+GROUP_2+HAVING+HAVING_CLAUSE+ORDER_BY+
+                SORT_FIELD_2 +" "+DESC+", "+ SORT_FIELD_1 +" "+ASC;
+        assertEquals(expected, getBuiltSqlStatement());
     }
 
     @Test
@@ -101,14 +110,12 @@ public class QueryUtilTest {
     private static final String SORT_FIELD_3 = "updated_at";
     private static final String ASC = "ASC";
     private static final String DESC = "DESC";
-    private static final String SELECT_ALL = "SELECT * FROM \""+TEST_TABLE+"\" " ;
-    private static final String SELECT_WHERE = "SELECT * FROM \""+TEST_TABLE+"\"  WHERE "+ SORT_FIELD_1 + "=" + SORT_PARAM;
-    private static final String SELECT_HAVING = "SELECT * FROM \""+TEST_TABLE+"\"  GROUP BY class HAVING "+HAVING_CLAUSE;
-    private static final String SELECT_ORDER_BY = "SELECT * FROM \""+TEST_TABLE+"\"  ORDER BY "+ SORT_FIELD_3 +" ASC";
-    private static final String SELECT_ORDER_BY_ORDER_DESC = "SELECT * FROM \""+TEST_TABLE+"\"  ORDER BY "+ SORT_FIELD_2 +" "+DESC;
-    private static final String SELECT_ALL_WHERE_HAVING_ORDER_BY_ORDER_DIRECTION =
-            "SELECT * FROM \""+TEST_TABLE+"\"  WHERE "+ SORT_FIELD_1 + "=" + SORT_PARAM +" GROUP BY "+
-                    GROUP_1+", "+GROUP_2+" HAVING "+HAVING_CLAUSE+" ORDER BY "+ SORT_FIELD_2 +" "+DESC+", "+ SORT_FIELD_1 +" "+ASC;
+    private static final String SELECT = "SELECT * FROM ";
+    private static final String WHERE = "  WHERE ";
+    private static final String HAVING = "  HAVING ";
+    private static final String EQUALS = "=";
+    private static final String GROUP_BY = " GROUP BY ";
+    private static final String ORDER_BY = " ORDER BY ";
 
     @AfterClass
     public static void clearProps() {
