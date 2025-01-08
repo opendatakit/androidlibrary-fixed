@@ -68,14 +68,14 @@ jobs:
       - run:
           name: Trigger AndroidCommon
           command: |
-            curl --location --request POST "https://circleci.com/api/v2/project/github/$CIRCLE_USERNAME/androidcommon/pipeline" \
+            curl --location --request POST "https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/androidcommon/pipeline" \
               --header 'Content-Type: application/json' \
               -u "${API_TOKEN}:" \
               --data "{\"branch\":\"$CIRCLE_BRANCH\"}" \
       - run:
           name: Trigger Services pipeline
           command: |
-            curl --location --request POST "https://circleci.com/api/v2/project/github/$CIRCLE_USERNAME/services/pipeline" \
+            curl --location --request POST "https://circleci.com/api/v2/project/github/$CIRCLE_PROJECT_USERNAME/services/pipeline" \
               --header 'Content-Type: application/json' \
               -u "${API_TOKEN}:" \
               --data "{\"branch\":\"$CIRCLE_BRANCH\"}" \
@@ -88,10 +88,18 @@ workflows:
       - build
       - test:
           requires:
-          - build
+            - build
       - deploy:
           requires:
             - test
+          filters:
+            branches:
+                only:
+                    - upgrade-jdk11
       - trigger-children:
           requires:
             - deploy
+          filters:
+             branches:
+                only:
+                    - upgrade-jdk11

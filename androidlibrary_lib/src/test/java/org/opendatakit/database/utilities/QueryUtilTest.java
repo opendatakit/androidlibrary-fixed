@@ -2,7 +2,6 @@ package org.opendatakit.database.utilities;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
-
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -11,6 +10,23 @@ import org.junit.Test;
 import org.opendatakit.utilities.StaticStateManipulator;
 
 public class QueryUtilTest {
+
+    private static final String TEST_TABLE = "test_table";
+    private static final String SORT_PARAM = "'Bob'";
+    private static final String HAVING_CLAUSE = "COUNT(class) > 4";
+    private static final String GROUP_1 = "class";
+    private static final String GROUP_2 = "birthday";
+    private static final String SORT_FIELD_1 = "name";
+    private static final String SORT_FIELD_2 = "created_at";
+    private static final String SORT_FIELD_3 = "updated_at";
+    private static final String ASC = "ASC";
+    private static final String DESC = "DESC";
+    private static final String SELECT = "SELECT * FROM ";
+    private static final String WHERE = "  WHERE ";
+    private static final String HAVING = "  HAVING ";
+    private static final String EQUALS = "=";
+    private static final String GROUP_BY = " GROUP BY ";
+    private static final String ORDER_BY = " ORDER BY ";
 
     String tableId;
     String whereClause;
@@ -99,23 +115,6 @@ public class QueryUtilTest {
         orderBy = null;
         direction = null;
     }
-
-    private static final String TEST_TABLE = "test_table";
-    private static final String SORT_PARAM = "'Bob'";
-    private static final String HAVING_CLAUSE = "COUNT(class) > 4";
-    private static final String GROUP_1 = "class";
-    private static final String GROUP_2 = "birthday";
-    private static final String SORT_FIELD_1 = "name";
-    private static final String SORT_FIELD_2 = "created_at";
-    private static final String SORT_FIELD_3 = "updated_at";
-    private static final String ASC = "ASC";
-    private static final String DESC = "DESC";
-    private static final String SELECT = "SELECT * FROM ";
-    private static final String WHERE = "  WHERE ";
-    private static final String HAVING = "  HAVING ";
-    private static final String EQUALS = "=";
-    private static final String GROUP_BY = " GROUP BY ";
-    private static final String ORDER_BY = " ORDER BY ";
 
     @AfterClass
     public static void clearProps() {
