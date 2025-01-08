@@ -22,8 +22,8 @@ public class QueryUtilTest {
     private static final String ASC = "ASC";
     private static final String DESC = "DESC";
     private static final String SELECT = "SELECT * FROM ";
-    private static final String WHERE = "  WHERE ";
-    private static final String HAVING = "  HAVING ";
+    private static final String WHERE = " WHERE ";
+    private static final String HAVING = " HAVING ";
     private static final String EQUALS = "=";
     private static final String GROUP_BY = " GROUP BY ";
     private static final String ORDER_BY = " ORDER BY ";
@@ -72,7 +72,7 @@ public class QueryUtilTest {
     @Test
     public void buildSqlStatement_withOrderBy_returnOrderByStatement() {
         orderBy = new String[]{SORT_FIELD_3};
-        String expected = SELECT+"\""+TEST_TABLE+"\" "+ SORT_FIELD_3 +" ASC";
+        String expected = SELECT+"\""+TEST_TABLE+"\" "+ ORDER_BY + SORT_FIELD_3 +" ASC";
         assertEquals(expected, getBuiltSqlStatement());
     }
 
@@ -92,7 +92,7 @@ public class QueryUtilTest {
         orderBy = new String[]{SORT_FIELD_2, SORT_FIELD_1, ""};
         direction = new String[]{DESC, ASC, null};
 
-        String expected = SELECT+"\""+TEST_TABLE+"\""+WHERE+SORT_FIELD_1+EQUALS+SORT_PARAM
+        String expected = SELECT+"\""+TEST_TABLE+"\" "+WHERE+SORT_FIELD_1+EQUALS+SORT_PARAM
                 +GROUP_BY+GROUP_1+", "+GROUP_2+HAVING+HAVING_CLAUSE+ORDER_BY+
                 SORT_FIELD_2 +" "+DESC+", "+ SORT_FIELD_1 +" "+ASC;
         assertEquals(expected, getBuiltSqlStatement());
