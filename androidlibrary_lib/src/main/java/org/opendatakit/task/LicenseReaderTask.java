@@ -29,97 +29,102 @@ import java.util.concurrent.Executors;
 
 public class LicenseReaderTask {
 
-  private final ExecutorService executorService = Executors.newSingleThreadExecutor();
-  private final Handler handler = new Handler(Looper.getMainLooper());
-  private Application appContext;
-  private LicenseReaderListener lrl;
-  private String appName;
-  private volatile String mResult;
+    private Application appContext;
+    private LicenseReaderListener lrl;
+    private String appName;
+    private String mResult;
 
+    private final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
- //execute() Starts the background task to read the license file
-  public void execute() {
-    executorService.execute(() -> {
-      StringBuilder interimResult = new StringBuilder();
-      String result = null;
+    public void execute() {
+        executorService.execute(this::doInBackground);
+    }
 
-      try {
-        InputStream licenseInputStream = appContext.getResources().openRawResource(R.raw.license);
-        InputStreamReader licenseInputStreamReader = new InputStreamReader(licenseInputStream);
-        BufferedReader r = new BufferedReader(licenseInputStreamReader);
+    private void doInBackground() {
+        StringBuilder interimResult = null;
 
-        String line;
-        while ((line = r.readLine()) != null) {
-          interimResult.append(line).append("\n");
+        try {
+            InputStream licenseInputStream = appContext.getResources().openRawResource(R.raw.license);
+            InputStreamReader licenseInputStreamReader = new InputStreamReader(licenseInputStream);
+            BufferedReader r = new BufferedReader(licenseInputStreamReader);
+            interimResult = new StringBuilder();
+            String line;
+            while ((line = r.readLine()) != null) {
+                interimResult.append(line).append("\n");
+            }
+            r.close();
+            licenseInputStreamReader.close();
+            licenseInputStream.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        r.close();
-        licenseInputStreamReader.close();
-        licenseInputStream.close();
+        String result = (interimResult == null) ? null : interimResult.toString();
+        mainThreadHandler.post(() -> onPostExecute(result));
+    }
 
-        result = interimResult.toString();
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-
-      String finalResult = result;
-      handler.post(() -> {
-        mResult = finalResult;
-        if (lrl != null) {
-          lrl.readLicenseComplete(finalResult);
+    private void onPostExecute(String result) {
+        synchronized (this) {
+            mResult = result;
+            appContext = null;
+            if (lrl != null) {
+                lrl.readLicenseComplete(result);
+            }
         }
-      });
-    });
-  }
+    }
 
-  //cancel() Stops the background task and notifies the listener (if any)
-  public void cancel() {
-    synchronized (this) {
-      executorService.shutdownNow();
-      handler.post(() -> {
-        // can be null if cancelled before task executes
-        if (lrl != null) {
-          lrl.readLicenseComplete(mResult);
+    public void cancel() {
+        executorService.shutdownNow();
+        mainThreadHandler.post(() -> onCancelled(mResult));
+    }
+
+    private void onCancelled(String result) {
+        synchronized (this) {
+            mResult = result;
+            appContext = null;
+            if (lrl != null) {
+                lrl.readLicenseComplete(result);
+            }
         }
-      });
     }
-  }
 
-  public String getResult() {
-    return mResult;
-  }
-
-  public void setLicenseReaderListener(LicenseReaderListener listener) {
-    synchronized (this) {
-      lrl = listener;
+    public String getResult() {
+        return mResult;
     }
-  }
 
-  public void clearLicenseReaderListener(LicenseReaderListener listener) {
-    synchronized (this) {
-      if (lrl == listener) {
-        lrl = null;
-      }
+    public void setLicenseReaderListener(LicenseReaderListener listener) {
+        synchronized (this) {
+            lrl = listener;
+        }
     }
-  }
 
-  public String getAppName() {
-    return appName;
-  }
-
-  public void setAppName(String appName) {
-    synchronized (this) {
-      this.appName = appName;
+    public void clearLicenseReaderListener(LicenseReaderListener listener) {
+        synchronized (this) {
+            if (lrl == listener) {
+                lrl = null;
+            }
+        }
     }
-  }
 
-  public Application getApplication() {
-    return appContext;
-  }
-
-  public void setApplication(Application appContext) {
-    synchronized (this) {
-      this.appContext = appContext;
+    public String getAppName() {
+        return appName;
     }
-  }
+
+    public void setAppName(String appName) {
+        synchronized (this) {
+            this.appName = appName;
+        }
+    }
+
+    public Application getApplication() {
+        return appContext;
+    }
+
+    public void setApplication(Application appContext) {
+        synchronized (this) {
+            this.appContext = appContext;
+        }
+    }
 }
