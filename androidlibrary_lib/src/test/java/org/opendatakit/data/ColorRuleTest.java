@@ -48,6 +48,25 @@ import java.util.UUID;
 
 @RunWith(JUnit4.class)
 public class ColorRuleTest {
+
+   //Constants
+   private static final String APP_NAME = "colorRuleTest";
+   private static final String TABLE_ID_1 = "myTableId_1";
+   private static final String COLOR_COL = "Color_Col";
+   private static final String MY_ELEMENT = "myElement";
+   private static final String MY_ELEMENT_1 = "myElement1";
+   private static final String MY_ELEMENT_2 = "myElement2";
+   private static final String MY_ELEMENT_3 = "myElement3";
+   private static final String MY_ELEMENT_4 = "myElement4";
+   private static final String MY_ELEMENT_5 = "myElement5";
+   private static final String MY_ELEMENT_6 = "myElement6";
+   private static final String EQUAL_SYMBOL = "=";
+   private static final String LESS_THAN_SYMBOL = "<";
+   private static final String LESS_THAN_OR_EQUAL_SYMBOL = "<=";
+   private static final String GREATER_THAN_OR_EQUAL_SYMBOL = ">=";
+   private static final String GREATER_THAN_SYMBOL = ">";
+   //
+
    String ruleId = UUID.randomUUID().toString();
    ColorRule cr;
 
@@ -65,11 +84,12 @@ public class ColorRuleTest {
    public void tearDownColorRule(){
       cr = null;
    }
+   
    @Test
    public void testColorRule() {
-      ColorRule cr1 = new ColorRule("myElement", ColorRule.RuleType.EQUAL, "5", Color.BLUE, Color
+      ColorRule cr1 = new ColorRule(MY_ELEMENT, ColorRule.RuleType.EQUAL, "5", Color.BLUE, Color
           .WHITE);
-      ColorRule cr2 = new ColorRule("myElement", ColorRule.RuleType.EQUAL, "5", Color.BLUE, Color
+      ColorRule cr2 = new ColorRule(MY_ELEMENT, ColorRule.RuleType.EQUAL, "5", Color.BLUE, Color
           .WHITE);
 
       Assert.assertTrue(cr1.equalsWithoutId(cr2));
@@ -78,7 +98,7 @@ public class ColorRuleTest {
       Assert.assertEquals(Color.WHITE, cr1.getBackground());
       Assert.assertEquals(Color.BLUE, cr1.getForeground());
       Assert.assertEquals(ColorRule.RuleType.EQUAL, cr1.getOperator());
-      Assert.assertEquals("myElement", cr1.getColumnElementKey());
+      Assert.assertEquals(MY_ELEMENT, cr1.getColumnElementKey());
       Assert.assertEquals("5", cr1.getVal());
 
       String crs1 = cr1.toString();
@@ -124,13 +144,6 @@ public class ColorRuleTest {
       Assert.assertTrue(cr1.equalsWithoutId(cr2));
    }
 
-   /**getSymbol() test.
-    * Acceptance:
-    * Given: color rule with a valid rule type
-    * When: asked for the rule symbol
-    * Then: Return the correct string value
-    * [RULE_TYPE: EXPECTED_SYMBOL] = {EQUAL: =, LESS_THAN: <, LESS_THAN_OR_EQUAL: <=, GREATER_THAN_OR_EQUAL: >=, GREATER_THAN: >}
-   */
    @Test
    public void givenColorRuleType_whenGetSymbolIsCalled_thenReturnCorrectSymbol() {
       assertEquals(EQUAL_SYMBOL, cr.getOperator().getSymbol());
@@ -148,13 +161,6 @@ public class ColorRuleTest {
       assertEquals(GREATER_THAN_OR_EQUAL_SYMBOL, cr.getOperator().getSymbol());
    }
 
-   /**getValues() test.
-    * Acceptance:
-    * Given: a list of strings
-    * When: the list is accessed
-    * Then: the list has the rule type symbols in the correct order
-    * [STRING_VALUE: EXPECTED_RULE_TYPE] = {=: EQUAL, <: LESS_THAN, <=: LESS_THAN_OR_EQUAL, >=: GREATER_THAN_OR_EQUAL,  >: GREATER_THAN}
-    */
    @Test
    public void givenCharSequenceOfValues_whenSequenceIsAccessed_thenReturnRuleTypeSymbolInCorrectOrder() {
       CharSequence[] ruleTypeStrings = getValues();
@@ -164,13 +170,7 @@ public class ColorRuleTest {
       assertEquals(GREATER_THAN_OR_EQUAL_SYMBOL, ruleTypeStrings[3].toString());
       assertEquals(GREATER_THAN_SYMBOL, ruleTypeStrings[4].toString());
    }
-      /**getEnumFromString() test.
-       * Acceptance:
-       * Given: a string value AND string is a valid rule symbol
-       * When: corresponding rule type is fetched
-       * Then: return the correct rule type
-       * [STRING_VALUE: EXPECTED_RULE_TYPE] = {=: EQUAL, <: LESS_THAN, <=: LESS_THAN_OR_EQUAL, >=: GREATER_THAN_OR_EQUAL,  >: GREATER_THAN}
-       */
+
    @Test
    public void givenValidStringValue_whenGetEnumIsCalled_thenReturnCorrectRuleType() {
       assertEquals(ColorRule.RuleType.LESS_THAN, ColorRule.RuleType.getEnumFromString(LESS_THAN_SYMBOL));
@@ -180,24 +180,12 @@ public class ColorRuleTest {
       assertEquals(ColorRule.RuleType.GREATER_THAN, ColorRule.RuleType.getEnumFromString(GREATER_THAN_SYMBOL));
       assertEquals(ColorRule.RuleType.NO_OP, ColorRule.RuleType.getEnumFromString(""));
    }
-   /**getEnumFromString() test.
-       * Acceptance:
-       * Given: a string value AND string is not a valid rule symbol
-       * When: corresponding rule type is fetched
-       * Then: throw an IllegalArgumentException with the correct error message
-    **/
+
    @Test
    public void givenInvalidStringValue_whenGetEnumIsCalled_thenReturnCorrectRuleType() {
       assertThrows(IllegalArgumentException.class, () -> ColorRule.RuleType.getEnumFromString("odk"));
    }
 
-   //Test to show if the returned Json representation for ColorRule is correct
-   /**getJsonRepresentation() test.
-    * Acceptance:
-    * Given: a colorRule
-    * When: asked for the json representation
-    * Then: return a map of the color rule attributes to their corresponding value
-    **/
    @Test
    public void givenColorRule_whenJsonRepresentationRequested_thenReturnMapOfAttributesToValues(){
       TreeMap<String,Object> expected = new TreeMap<>();
@@ -210,28 +198,17 @@ public class ColorRuleTest {
       assertEquals(expected, cr.getJsonRepresentation());
    }
 
-   /**toString() test.
-    * Acceptance:
-    * Given: a colorRule
-    * When: asked for the string representation
-    * Then: return a string containing assignment of the color rule value to their corresponding
-    attributes, each separated by comma(,).
-    **/
    @Test
    public void givenColorRule_whenStringRequested_thenReturnStringOfAttributesToValuesAssignmentSeparatedByComma() {
       String expected = "[id="+ruleId+", elementKey=myElement, operator=EQUAL, value=1, background=-16777216, foreground=-256]";
       assertEquals(expected, cr.toString());
    }
 
-   /**checkMatch() test.
-    * Acceptance:
-    * Given: a colorRule that exists in a table row AND has a valid operator
-    * When: searched for with a specified element type in a table row of valid values
-    * Then: return true if match found with correct type.
-    **/
    @Test
    public void givenValidColorRuleInTableRow_whenRowSearched_thenReturnTrue() {
-      TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(new String[]{"1","1","3","5","5","false"});
+      TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(
+              new String[]{"1","1","3","5","5","false"}
+      );
       //Check that all RuleTypes work with integer or number type
       updateColorRule(MY_ELEMENT_1, "1", ColorRule.RuleType.EQUAL);
       assertTrue(cr.checkMatch(ElementDataType.integer, rowToMatch));
@@ -247,12 +224,6 @@ public class ColorRuleTest {
       assertTrue(cr.checkMatch(ElementDataType.bool, rowToMatch));
    }
 
-   /**checkMatch() test.
-    * Acceptance:
-    * Given: a colorRule that doesn't exist in a table row OR has an invalid operator OR has a value with unexpected type
-    * When: searched for with the expected element type in the table row
-    * Then: return false.
-    **/
    @Test
    public void givenValidColorRuleInTableRow_whenRowSearched_andOperatorIsNoOp_orDiffElementTypeSpec_thenReturnFalse() {
       TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(new String[]{"","[44,67]","4","3",null,"odk"});
@@ -278,7 +249,9 @@ public class ColorRuleTest {
    private TypedRow setupTableWithRowEntriesAndReturnTypedRow(String[] rowEntries){
       //Setup Color table
       String[] primaryKey = {"id"};
-      String[] elementKeys = {MY_ELEMENT_1, MY_ELEMENT_2, MY_ELEMENT_3, MY_ELEMENT_4, MY_ELEMENT_5, MY_ELEMENT_6};
+      String[] elementKeys = {
+              MY_ELEMENT_1, MY_ELEMENT_2, MY_ELEMENT_3, MY_ELEMENT_4, MY_ELEMENT_5, MY_ELEMENT_6
+      };
       HashMap<String, Integer> elementKeyToIndex = new HashMap<>();
       elementKeyToIndex.put(MY_ELEMENT_1,0);
       elementKeyToIndex.put(MY_ELEMENT_2,1);
@@ -303,21 +276,6 @@ public class ColorRuleTest {
       cr.setOperator(operator);
    }
 
-   private static final String APP_NAME = "colorRuleTest";
-   private static final String TABLE_ID_1 = "myTableId_1";
-   private static final String COLOR_COL = "Color_Col";
-   private static final String MY_ELEMENT = "myElement";
-   private static final String MY_ELEMENT_1 = "myElement1";
-   private static final String MY_ELEMENT_2 = "myElement2";
-   private static final String MY_ELEMENT_3 = "myElement3";
-   private static final String MY_ELEMENT_4 = "myElement4";
-   private static final String MY_ELEMENT_5 = "myElement5";
-   private static final String MY_ELEMENT_6 = "myElement6";
-   private static final String EQUAL_SYMBOL = "=";
-   private static final String LESS_THAN_SYMBOL = "<";
-   private static final String LESS_THAN_OR_EQUAL_SYMBOL = "<=";
-   private static final String GREATER_THAN_OR_EQUAL_SYMBOL = ">=";
-   private static final String GREATER_THAN_SYMBOL = ">";
    @AfterClass
    public static void clearProperties() {
       StaticStateManipulator.get().reset();
