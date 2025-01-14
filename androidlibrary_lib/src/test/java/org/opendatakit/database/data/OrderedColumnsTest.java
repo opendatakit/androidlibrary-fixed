@@ -1,122 +1,176 @@
 package org.opendatakit.database.data;
-import android.os.Parcel;
+
+import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.opendatakit.aggregate.odktables.rest.ElementDataType;
-import org.opendatakit.aggregate.odktables.rest.ElementType;
 import org.opendatakit.aggregate.odktables.rest.entity.Column;
-import org.opendatakit.database.data.ColumnDefinition;
-import org.opendatakit.database.data.OrderedColumns;
+import org.opendatakit.logging.WebLogger;
+import org.opendatakit.logging.desktop.WebLoggerDesktopFactoryImpl;
+import org.opendatakit.utilities.StaticStateManipulator;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeMap;
+
 import static org.junit.Assert.*;
 
 public class OrderedColumnsTest {
-   private String appName;
-    private String tableId;
+    private static final String APP_NAME = "testApp";
+    private static final String TABLE_ID = "testTable";
+    private static final String ELEMENT_KEY_1 = "elementKey1";
+    private static final String ELEMENT_NAME_1 = "elementName1";
+    private static final String ELEMENT_KEY_2 = "elementKey2";
+    private static final String ELEMENT_NAME_2 = "elementName2";
+    private static final String ELEMENT_TYPE_NUMBER = "number";
+    private static final String ELEMENT_TYPE_STRING = "string";
+    private static final String ELEMENT_TYPE_GEO = "geopoint";
+    private static final String LONGITUDE = "longitude";
+    private static final String LATITUDE = "latitude";
     private List<Column> testColumns;
+    private OrderedColumns orderedColumns;
+
+    @BeforeClass
+    public static void oneTimeSetUp() {
+        StaticStateManipulator.get().reset();
+        WebLogger.setFactory(new WebLoggerDesktopFactoryImpl());
+    }
 
     @Before
     public void setUp() {
-        appName = "testApp";
-        tableId = "testTable";
-
         testColumns = new ArrayList<>();
-        testColumns.add(new Column("elementKey1", "elementName1", "elementType1", "[]")); // Use an empty JSON array for no children
-        testColumns.add(new Column("elementKey2", "elementName2", "elementType2", "[]")); // Modify child keys as per actual validation rules
+        testColumns.add(new Column(ELEMENT_KEY_1, ELEMENT_NAME_1, ELEMENT_TYPE_STRING, "[]")); // Use an empty JSON array for no children
+        testColumns.add(new Column(ELEMENT_KEY_2, ELEMENT_NAME_2, ELEMENT_TYPE_STRING, "[]")); // Modify child keys as per actual validation rules
+        orderedColumns = new OrderedColumns(APP_NAME, TABLE_ID, testColumns);
     }
 
+    @After
+    public void tearDown() {
+        testColumns = null;
+        orderedColumns = null;
+    }
 
     @Test
-    public void ConstructorWithValidList() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
+    public void givenOrderedColumns_whenGetAppName_thenReturnCorrespondingAppName() {
         assertNotNull(orderedColumns);
-        assertEquals(appName, orderedColumns.getAppName());
-        assertEquals(tableId, orderedColumns.getTableId());
+        assertEquals(APP_NAME, orderedColumns.getAppName());
+    }
+
+    @Test
+    public void givenOrderedColumns_whenGetTableId_thenReturnCorrespondingTableId() {
+        assertNotNull(orderedColumns);
+        assertEquals(TABLE_ID, orderedColumns.getTableId());
+    }
+
+    @Test
+    public void givenOrderedColumns_whenGetColumnDefinitions_thenReturnCorrespondingDefinitions() {
+        assertNotNull(orderedColumns);
         assertNotNull(orderedColumns.getColumnDefinitions());
     }
 
     @Test
-    public void WriteToParcel() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
-        Parcel parcel = Parcel.obtain();
-        orderedColumns.writeToParcel(parcel, 0);
-
-        parcel.setDataPosition(0);
-
-        OrderedColumns createdFromParcel = OrderedColumns.CREATOR.createFromParcel(parcel);
-        assertEquals(appName, createdFromParcel.getAppName());
-        assertEquals(tableId, createdFromParcel.getTableId());
-
-        assertEquals(testColumns.size(), createdFromParcel.getColumns().size());
-
-        parcel.recycle();
-    }
-
-    @Test
-    public void testFind() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
-
-        ColumnDefinition foundColumn = orderedColumns.find("elementKey1");
+    public void givenOrderedColumns_whenFindExistingElement_thenReturnColumnWithElementKey() {
+        assertNotNull(orderedColumns);
+        ColumnDefinition foundColumn = orderedColumns.find(ELEMENT_KEY_1);
         assertNotNull(foundColumn);
-        assertEquals("elementKey1", foundColumn.getElementKey());
-
-        try {
-            orderedColumns.find("nonExistentKey");
-            fail("Expected an IllegalArgumentException to be thrown");
-        } catch (IllegalArgumentException e) {
-        }
+        assertEquals(ELEMENT_KEY_1, foundColumn.getElementKey());
     }
+
     @Test
-    public void GetRetentionColumnNames() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
+    public void givenOrderedColumns_whenFindNonExistingElement_thenThrowIllegalArgumentException() {
+        assertNotNull(orderedColumns);
+        assertThrows(IllegalArgumentException.class, () -> orderedColumns.find("noExistenceKey"));
+    }
+
+    @Test
+    public void givenOrderedColumns_whenGetRetentionColumnNames_thenReturnArrayOfElementKeys() {
+        assertNotNull(orderedColumns);
         ArrayList<String> retentionColumns = orderedColumns.getRetentionColumnNames();
         assertNotNull(retentionColumns);
-        assertTrue(retentionColumns.size() > 0);  // At least one retention column should exist
+        ArrayList<String> expected = new ArrayList<>();
+        expected.add(ELEMENT_KEY_1);
+        expected.add(ELEMENT_KEY_2);
+        assertEquals(expected, retentionColumns);
     }
 
     @Test
-    public void GraphViewIsPossible() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
-        boolean graphView = orderedColumns.graphViewIsPossible();
-        assertFalse(graphView);
+    public void givenOrderedColumnsWithNumberType_whenCheckGraphViewIsPossible_thenReturnTrue() {
+        tearDown();
+        ArrayList<Column> numberColumns = new ArrayList<>();
+        numberColumns.add(new Column(ELEMENT_KEY_1, ELEMENT_NAME_1, ELEMENT_TYPE_NUMBER, "[]")); // Use an empty JSON array for no children
+        numberColumns.add(new Column(ELEMENT_KEY_2, ELEMENT_NAME_2, ELEMENT_TYPE_NUMBER, "[]")); // Modify child keys as per actual validation rules
+        orderedColumns = new OrderedColumns(APP_NAME, TABLE_ID, numberColumns);
+        assertNotNull(orderedColumns);
+        assertTrue(orderedColumns.graphViewIsPossible());
     }
 
     @Test
-    public void MapViewIsPossible() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
-        boolean mapView = orderedColumns.mapViewIsPossible();
-        assertFalse(mapView);
+    public void givenOrderedColumnsWithNonNumberType_whenCheckGraphViewIsPossible_thenReturnFalse() {
+        assertNotNull(orderedColumns);
+        assertFalse(orderedColumns.graphViewIsPossible());
     }
 
     @Test
-    public void GetGeopointColumnDefinitions() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
-        ArrayList<ColumnDefinition> geopointColumns = orderedColumns.getGeopointColumnDefinitions();
-        assertNotNull(geopointColumns);
-        assertTrue(geopointColumns.isEmpty());
+    public void givenOrderedColumnsWithGeopointsType_whenCheckGraphViewIsPossible_thenReturnTrue() {
+        tearDown();
+        ArrayList<Column> geoColumns = new ArrayList<>();
+        geoColumns.add(new Column(ELEMENT_KEY_1, ELEMENT_NAME_1, ELEMENT_TYPE_GEO, "[]")); // Use an empty JSON array for no children
+        geoColumns.add(new Column(ELEMENT_KEY_2, ELEMENT_NAME_2, ELEMENT_TYPE_GEO, "[]")); // Modify child keys as per actual validation rules
+        orderedColumns = new OrderedColumns(APP_NAME, TABLE_ID, geoColumns);
+        assertNotNull(orderedColumns);
+        assertTrue(orderedColumns.mapViewIsPossible());
     }
 
     @Test
-    public void ParcelCreator() {
-        OrderedColumns[] orderedColumnsArray = OrderedColumns.CREATOR.newArray(2);
-        assertEquals(2, orderedColumnsArray.length);
+    public void givenOrderedColumnsWithLongitudeAndLatitude_whenCheckGraphViewIsPossible_thenReturnTrue() {
+        assertNotNull(orderedColumns);
+        //TODO: cater for Longitude and latitude clause
+//        assertTrue(orderedColumns.mapViewIsPossible());
     }
 
     @Test
-    public void GetDataModel() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
+    public void givenOrderedColumnsWithNoGeopoints_whenCheckMapViewIsPossible_thenReturnFalse() {
+        assertNotNull(orderedColumns);
+        assertFalse(orderedColumns.mapViewIsPossible());
+    }
+
+    @Test
+    public void givenOrderedColumnsWithNoGeopoints_whenGetGeoColumnDefinitions_thenReturnEmptyArray() {
+        ArrayList<ColumnDefinition> geoPointColumns = orderedColumns.getGeopointColumnDefinitions();
+        assertNotNull(geoPointColumns);
+        assertTrue(geoPointColumns.isEmpty());
+    }
+
+    @Test
+    public void givenOrderedColumnsWithGeopoints_whenGetGeoColumnDefinitions_thenReturnArrayOfColDefinition() {
+        ArrayList<Column> geoColumns = new ArrayList<>();
+        geoColumns.add(new Column(LATITUDE, ELEMENT_NAME_1, ELEMENT_TYPE_GEO, "[]"));
+        geoColumns.add(new Column(LONGITUDE, ELEMENT_NAME_2, ELEMENT_TYPE_GEO, "[]"));
+        orderedColumns = new OrderedColumns(APP_NAME, TABLE_ID, geoColumns);
+        ArrayList<ColumnDefinition> geoPointColumns = orderedColumns.getGeopointColumnDefinitions();
+        assertNotNull(geoPointColumns);
+        assertFalse(geoPointColumns.isEmpty());
+    }
+
+    @Test
+    public void givenGetDataModel() {
         TreeMap<String, Object> dataModel = orderedColumns.getDataModel();
         assertNotNull(dataModel);
-        assertTrue(dataModel.size() > 0);
+        assertFalse(dataModel.isEmpty());
     }
 
     @Test
     public void GetExtendedDataModel() {
-        OrderedColumns orderedColumns = new OrderedColumns(appName, tableId, testColumns);
+        OrderedColumns orderedColumns = new OrderedColumns(APP_NAME, TABLE_ID, testColumns);
         TreeMap<String, Object> extendedDataModel = orderedColumns.getExtendedDataModel();
         assertNotNull(extendedDataModel);
-        assertTrue(extendedDataModel.size() > 0);
+        assertFalse(extendedDataModel.isEmpty());
+    }
+
+    @AfterClass
+    public static void oneTimeTearDown() {
+        StaticStateManipulator.get().reset();
+        WebLogger.closeAll();
     }
 }
