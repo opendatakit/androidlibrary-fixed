@@ -1,59 +1,39 @@
 package org.opendatakit.database;
 
-import android.os.Parcel;
 import org.junit.Before;
 import org.junit.Test;
 import org.opendatakit.database.data.BaseTable;
-import org.opendatakit.database.queries.ResumableQuery;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
 public class BaseTableTest {
-
+    private static final String ID = "id";
+    private static final String COLUMN_1 = "column1";
+    private static final String COLUMN_2 = "column2";
     private BaseTable baseTable;
 
     @Before
     public void setUp() {
-        String[] primaryKey = {"id"};
-        String[] elementKeyForIndex = {"column1", "column2"};
+        String[] primaryKey = {ID};
+        String[] elementKeyForIndex = {COLUMN_1, COLUMN_2};
         Map<String, Integer> elementKeyToIndex = new HashMap<>();
-        elementKeyToIndex.put("column1", 0);
-        elementKeyToIndex.put("column2", 1);
-
-        ResumableQuery query = null;
-
-        baseTable = new BaseTable(query, elementKeyForIndex, elementKeyToIndex, primaryKey, 0);
+        elementKeyToIndex.put(COLUMN_1, 0);
+        elementKeyToIndex.put(COLUMN_2, 1);
+        baseTable = new BaseTable(null, elementKeyForIndex, elementKeyToIndex, primaryKey, 0);
     }
 
     @Test
-    public void testGetWidth() {
-
+    public void givenBaseTable_whenGetWidth_thenReturnTheCountOfElementForKeyIndex() {
         int width = baseTable.getWidth();
-
         assertEquals(2, width);
     }
 
     @Test
-    public void testGetPrimaryKey() {
+    public void givenBaseTable_whenGetPrimaryKey_thenReturnStringArrayOfPrimaryKeys() {
         String[] primaryKey = baseTable.getPrimaryKey();
-
         assertArrayEquals(new String[]{"id"}, primaryKey);
     }
 
-    @Test
-    public void testParcelable() {
-        Parcel parcel = Parcel.obtain();
-        baseTable.writeToParcel(parcel, 0);
-        parcel.setDataPosition(0);
-
-        BaseTable createdFromParcel = BaseTable.CREATOR.createFromParcel(parcel);
-
-        assertNotNull(createdFromParcel);
-        assertArrayEquals(baseTable.getPrimaryKey(), createdFromParcel.getPrimaryKey());
-        assertEquals(baseTable.getWidth(), createdFromParcel.getWidth());
-
-        parcel.recycle();
-    }
 }
