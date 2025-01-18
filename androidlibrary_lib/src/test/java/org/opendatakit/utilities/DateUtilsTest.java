@@ -26,7 +26,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
-import java.util.SimpleTimeZone;
 import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
@@ -57,7 +56,7 @@ public class DateUtilsTest {
     DateUtils dateUtil = new DateUtils(NIGERIA_LOCALE, NIGERIA_TIME_ZONE);
     String value = dateUtil.validifyDateValue("3/4/2015");
 
-    String expected = getTimeString(DateTime.parse("2015-03-04T")) ;
+    String expected = getTimeString(DateTime.parse("2015-03-04T"), NIGERIA_LOCALE, NIGERIA_TIME_ZONE) ;
     assertEquals(expected, value.substring(0,expected.length()));
   }
 
@@ -68,7 +67,7 @@ public class DateUtilsTest {
     assertNotNull(value);
 
     DateTime now = new DateTime();
-    String expectedFormattedDate = getTimeString(now);
+    String expectedFormattedDate = getTimeString(now, CAMEROON_LOCALE, CAMEROON_TIME_ZONE);
 
     // This is to take the slight delay when checking for output into consideration
     int periodIndex = expectedFormattedDate.indexOf('.');
@@ -82,7 +81,7 @@ public class DateUtilsTest {
     assertNotNull(value);
 
     DateTime nowPlus10Minutes = new DateTime().plusMinutes(10);
-    String expectedFormattedDate = getTimeString(nowPlus10Minutes);
+    String expectedFormattedDate = getTimeString(nowPlus10Minutes, Locale.CANADA, TORONTO_TIME_ZONE);
     int periodIndex = expectedFormattedDate.indexOf('.');
     assertTrue(value.startsWith(expectedFormattedDate.substring(0, periodIndex + 1)));
   }
@@ -94,7 +93,7 @@ public class DateUtilsTest {
     assertNotNull(value);
 
     DateTime nowMinus3Hours = new DateTime().minusHours(3);
-    String expectedFormattedDate = getTimeString(nowMinus3Hours);
+    String expectedFormattedDate = getTimeString(nowMinus3Hours, Locale.US, LA_TIME_ZONE);
     int periodIndex = expectedFormattedDate.indexOf('.');
     assertTrue(value.startsWith(expectedFormattedDate.substring(0, periodIndex + 1)));
   }
@@ -113,12 +112,12 @@ public class DateUtilsTest {
     assertNull(value);
   }
 
-  private String getTimeString(DateTime time){
+  private String getTimeString(DateTime time, Locale locale, TimeZone timeZone){
     // convert to a nanosecond-extended iso8601-style UTC date yyyy-mm-ddTHH:MM:SS.sssssssss
     String partialPattern = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-    Calendar calendar = GregorianCalendar.getInstance(new SimpleTimeZone(0, "UT"));
+    Calendar calendar = GregorianCalendar.getInstance(timeZone);
 
-    SimpleDateFormat fmt = new SimpleDateFormat(partialPattern, Locale.ROOT);
+    SimpleDateFormat fmt = new SimpleDateFormat(partialPattern, locale);
     fmt.setCalendar(calendar);
     Date d = new Date(time.getMillis());
     return fmt.format(d) + "000000";
