@@ -144,6 +144,13 @@ public class ColorRuleTest {
       Assert.assertTrue(cr1.equalsWithoutId(cr2));
    }
 
+   /**getSymbol() test.
+    * Acceptance:
+    * Given: color rule with a valid rule type
+    * When: asked for the rule symbol
+    * Then: Return the correct string value
+    * [RULE_TYPE: EXPECTED_SYMBOL] = {EQUAL: =, LESS_THAN: <, LESS_THAN_OR_EQUAL: <=, GREATER_THAN_OR_EQUAL: >=, GREATER_THAN: >}
+   */
    @Test
    public void givenColorRuleType_whenGetSymbolIsCalled_thenReturnCorrectSymbol() {
       assertEquals(EQUAL_SYMBOL, cr.getOperator().getSymbol());
@@ -161,6 +168,13 @@ public class ColorRuleTest {
       assertEquals(GREATER_THAN_OR_EQUAL_SYMBOL, cr.getOperator().getSymbol());
    }
 
+   /**getValues() test.
+    * Acceptance:
+    * Given: a list of strings
+    * When: the list is accessed
+    * Then: the list has the rule type symbols in the correct order
+    * [STRING_VALUE: EXPECTED_RULE_TYPE] = {=: EQUAL, <: LESS_THAN, <=: LESS_THAN_OR_EQUAL, >=: GREATER_THAN_OR_EQUAL,  >: GREATER_THAN}
+    */
    @Test
    public void givenCharSequenceOfValues_whenSequenceIsAccessed_thenReturnRuleTypeSymbolInCorrectOrder() {
       CharSequence[] ruleTypeStrings = getValues();
@@ -171,6 +185,13 @@ public class ColorRuleTest {
       assertEquals(GREATER_THAN_SYMBOL, ruleTypeStrings[4].toString());
    }
 
+      /**getEnumFromString() test.
+       * Acceptance:
+       * Given: a string value AND string is a valid rule symbol
+       * When: corresponding rule type is fetched
+       * Then: return the correct rule type
+       * [STRING_VALUE: EXPECTED_RULE_TYPE] = {=: EQUAL, <: LESS_THAN, <=: LESS_THAN_OR_EQUAL, >=: GREATER_THAN_OR_EQUAL,  >: GREATER_THAN}
+       */
    @Test
    public void givenValidStringValue_whenGetEnumIsCalled_thenReturnCorrectRuleType() {
       assertEquals(ColorRule.RuleType.LESS_THAN, ColorRule.RuleType.getEnumFromString(LESS_THAN_SYMBOL));
@@ -181,11 +202,24 @@ public class ColorRuleTest {
       assertEquals(ColorRule.RuleType.NO_OP, ColorRule.RuleType.getEnumFromString(""));
    }
 
+   /**getEnumFromString() test.
+       * Acceptance:
+       * Given: a string value AND string is not a valid rule symbol
+       * When: corresponding rule type is fetched
+       * Then: throw an IllegalArgumentException with the correct error message
+    **/
    @Test
    public void givenInvalidStringValue_whenGetEnumIsCalled_thenReturnCorrectRuleType() {
       assertThrows(IllegalArgumentException.class, () -> ColorRule.RuleType.getEnumFromString("odk"));
    }
 
+   //Test to show if the returned Json representation for ColorRule is correct
+   /**getJsonRepresentation() test.
+    * Acceptance:
+    * Given: a colorRule
+    * When: asked for the json representation
+    * Then: return a map of the color rule attributes to their corresponding value
+    **/
    @Test
    public void givenColorRule_whenJsonRepresentationRequested_thenReturnMapOfAttributesToValues(){
       TreeMap<String,Object> expected = new TreeMap<>();
@@ -198,12 +232,25 @@ public class ColorRuleTest {
       assertEquals(expected, cr.getJsonRepresentation());
    }
 
+   /**toString() test.
+    * Acceptance:
+    * Given: a colorRule
+    * When: asked for the string representation
+    * Then: return a string containing assignment of the color rule value to their corresponding
+    attributes, each separated by comma(,).
+    **/
    @Test
    public void givenColorRule_whenStringRequested_thenReturnStringOfAttributesToValuesAssignmentSeparatedByComma() {
       String expected = "[id="+ruleId+", elementKey=myElement, operator=EQUAL, value=1, background=-16777216, foreground=-256]";
       assertEquals(expected, cr.toString());
    }
 
+   /**checkMatch() test.
+    * Acceptance:
+    * Given: a colorRule that exists in a table row AND has a valid operator
+    * When: searched for with a specified element type in a table row of valid values
+    * Then: return true if match found with correct type.
+    **/
    @Test
    public void givenValidColorRuleInTableRow_whenRowSearched_thenReturnTrue() {
       TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(
@@ -224,6 +271,12 @@ public class ColorRuleTest {
       assertTrue(cr.checkMatch(ElementDataType.bool, rowToMatch));
    }
 
+   /**checkMatch() test.
+    * Acceptance:
+    * Given: a colorRule that doesn't exist in a table row OR has an invalid operator OR has a value with unexpected type
+    * When: searched for with the expected element type in the table row
+    * Then: return false.
+    **/
    @Test
    public void givenValidColorRuleInTableRow_whenRowSearched_andOperatorIsNoOp_orDiffElementTypeSpec_thenReturnFalse() {
       TypedRow rowToMatch = setupTableWithRowEntriesAndReturnTypedRow(new String[]{"","[44,67]","4","3",null,"odk"});
