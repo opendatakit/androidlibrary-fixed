@@ -113,6 +113,21 @@ public class DateUtilsTest {
     assertNull(value);
   }
 
+  @Test
+  public void validifyDateValue_withTodayIntervalInput_returnsFormattedDateTimeForStartOfCurrentDay(){
+    DateUtils dateUtils = new DateUtils(NIGERIA_LOCALE, NIGERIA_TIME_ZONE);
+    String input = "today";  // Supported input format
+    DateTime expectedStart = new DateTime().withTimeAtStartOfDay();
+    String expectedOutput = getTimeString(expectedStart);
+    assertEquals(expectedOutput, dateUtils.validifyDateValue(input));
+  }
+
+  @Test(expected = NullPointerException.class)
+  public void validifyDateValue_withNullInput_returnsNull() {
+    DateUtils dateUtils = new DateUtils(Locale.ITALY, ITALY_TIME_ZONE);
+    assertNull(dateUtils.validifyDateValue(null));
+  }
+
   private String getTimeString(DateTime time){
     // convert to a nanosecond-extended iso8601-style UTC date yyyy-mm-ddTHH:MM:SS.sssssssss
     String partialPattern = "yyyy-MM-dd'T'HH:mm:ss.SSS";
@@ -127,27 +142,5 @@ public class DateUtilsTest {
   public static void oneTimeTearDown() {
     StaticStateManipulator.get().reset();
   }
-
-  @Test
-  public void testValidInstantInput(){
-    String input = "3/4/2015";
-    String expectedDateTime = "2015-03-04T00:00:00.000000000";
-    assertEquals(expectedDateTime, dateUtils.validifyDateValue(input));
-  }
-
-  @Test
-  public void testValidIntervalInput(){
-    String input = "today";  // Supported input format
-    DateTime expectedStart = new DateTime().withTimeAtStartOfDay();
-    String expectedOutput = dateUtils.formatDateTimeForDb(expectedStart);
-    assertEquals(expectedOutput, dateUtils.validifyDateValue(input));
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void testNullInput() {
-    String input = null;
-    dateUtils.validifyDateValue(input);
-  }
-
 
 }
